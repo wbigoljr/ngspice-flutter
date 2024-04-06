@@ -1,0 +1,29 @@
+inverter example circuit for control language tutorial
+* file inv-example.cir
+
+* the power supply 2.0 V
+Vcc cc 0 2
+
+* the input signal for dc and tran simulation
+Vin in 0 dc 0 pulse (0 2 95n 2n 2n 90n 180n)
+
+* the circuit
+Mn1 out in 0 0 nm W=2u L=0.18u
+Mp1 out in cc cc pm W=4u L=0.18u
+
+* model and model parameters (we use the built-in default parameters for BSIM4)
+.model nm nmos level=14 version=4.8.1
+.model pm pmos level=14 version=4.8.1
+
+* simulation commands
+.tran 100p 40000n
+
+* control language script
+.control                                    ; begin of control section
+run                                         ; run the .tran command
+set xbrushwidth=2                           ; set linewidth of graph
+plot v(in) v(out)                           ; plot the simulation results
+write $inputdir/simout.out v(in) v(out)     ; write the results to a file
+.endc                                       ; end of control section
+
+.end

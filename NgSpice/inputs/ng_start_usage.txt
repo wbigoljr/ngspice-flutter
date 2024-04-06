@@ -1,0 +1,44 @@
+About ng_start.exe
+
+
+** load and initialize ngspice
+Button 'Attach, Init'
+
+Failing to load ngspice will yield an access error message, 
+if any other button is hit.
+
+** load circuit
+Button 'Internal Array': simple RC circuit, internally defined, 
+   load and send to ngspice
+
+Button 'Source file': load file as defined in ng_start.ini
+   by sending command 'source file' to ngspice
+
+Button 'Load file': load input file with file selection box 
+   and send to ngspice
+
+** run simulation
+Button 'bg_run': start background thread with ngspice command 'run'.
+
+Button 'bg_halt': halt background thread, program continues in main thread.
+   You may now issue any other valid command to ngspice and/or read data values 
+
+Button 'bg_resume': resume background thread with ngspice command 'resume'.
+
+Button 'Source thread': load file as defined in ng_start.ini
+   by sending command 'source file' to ngspice in another thread,
+   'file' has to contain a .control script that starts simulation
+   and stops with command 'quit'.  
+
+Button 'Load thread': load input file with file selection box 
+   and send to ngspice in another thread,
+   'file' has to contain a .control script that starts simulation
+   and stops with command 'quit'.
+   
+Button 'Detach'
+   Clear everything by unloading ngspice.dll. To continue, use
+   buttons 'Clear output' and 'Attach, Init' afterwards.   
+
+Messages from ngspice go to stdout or stderr windows. Messages from 
+ng_start.exe use the same windows, are preceded by a symbol D, e.g.
+DWarning
