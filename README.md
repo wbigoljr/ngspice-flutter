@@ -2,11 +2,13 @@
 
 NGSpice running on Flutter using FFI.
 
-## Getting Started
+### Project License
 
+This project is licensed under the [GNU General Public License v3.0].
 
-## License
-This project is licensed under the [GNU General Public License v3.0](LICENSE.md).
+### Ngspice License
+
+Ngspice is licensed under the [BSD 3-Clause License]([ngspice/LICENSE](https://github.com/danchitnis/ngspice-sf-mirror/tree/pre-master-42?tab=License-1-ov-file))
 
 ---
 
