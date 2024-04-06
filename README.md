@@ -1,6 +1,8 @@
 # NGSpice Flutter
 
-NGSpice running on Flutter using FFI.
+NGSpice running on Flutter Desktop using FFI.
+
+![App Image](https://softbrewmobile.com/otherimages/ngSpiceFlutter01.jpg)
 
 This project serves as a demonstration of how to import NGSpice DLL using Dart FFI on Flutter.
 
