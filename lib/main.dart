@@ -150,7 +150,12 @@ class _MyHomePageState extends State<MyHomePage> {
               const MenuDivider(),
                 MenuButton(
                 text: const Text('Reload Library', style: TextStyle(fontSize: gFontSize)),
-                onTap: () {_initalizeNgspice();},
+                onTap: () {
+                  _initalizeNgspice();
+                    setState(() {
+                      _outputStrCtrl.text = initialOutput;
+                    });
+                  },
                 //icon: const Icon(Icons.save, size: 19,),
                 shortcutText: 'Ctrl+R',
               ),

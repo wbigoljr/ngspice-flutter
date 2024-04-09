@@ -41,17 +41,18 @@ class NgSpiceInterface {
   {
     if(_isInitialized) return;
 
-    String libraryPath = path.join(Directory.current.path, 'NgSpice', 'bin', 'ngspice.dll');
-    
+    String libraryName = 'ngspice.dll';
     if (Platform.isMacOS) { 
-      libraryPath = path.join(Directory.current.path, 'NgSpice', 'bin', 'ngspice.dylib');
+      libraryName = 'ngspice.dylib';
     } else if (Platform.isLinux) { 
-      libraryPath = path.join(Directory.current.path, 'NgSpice', 'bin', 'ngspice.so');
+      libraryName = 'ngspice.so';
     }
 
+    String libraryPath = path.join(Directory.current.path, 'NgSpice', 'bin', libraryName);
     if(File(libraryPath).existsSync() == false)
     {
-      _ngspiceLibVer = '(Library not found)';
+      _ngspiceLibVer = '($libraryName not found)';
+       initOuput = _ngspiceLibVer;
       return;
     } 
 
