@@ -1,3 +1,6 @@
+// Author: Wilfredo Bigol Jr.
+// Description: This is a Flutter app demonstrating the usage of NGSpice shared library using Dart FFI.
+
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:menu_bar/menu_bar.dart';
