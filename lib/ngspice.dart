@@ -8,7 +8,7 @@ import 'package:compute/compute.dart';
 String _ngspiceLibVer = '00';
 String _output = '';
 String _ngStatus = 'ready';
-String _simResults = '';
+//String _simResults = '';
 
 class NgSpiceInterface {
   
@@ -32,7 +32,7 @@ class NgSpiceInterface {
 
   void ngInit()
   {
-    if(_isInitialized) return; //Already Initialized
+    if(_isInitialized) return;
 
     String libraryPath = path.join(Directory.current.path, 'NgSpice', 'bin', 'ngspice.dll');
     
@@ -63,7 +63,7 @@ class NgSpiceInterface {
       getCharPointer,         // Use the function pointer for GetChar
       getStatPointer,         // Use the function pointer for GetStat
       controlledExitPointer,  // Use the function pointer for ControlledExit
-      ngDataPointer,        // Use the function pointer for SendData
+      ngDataPointer,          // Use the function pointer for SendData
       sendInitDataPointer,    // Use the function pointer for SendInitData
       bGThreadRunningPointer, // Use the function pointer for BGThreadRunning
       userDataPtr,            // Not used at the moment
@@ -277,8 +277,6 @@ int controlledExitReceive(int exitStatus, bool unloadStatus, bool exitType, int 
 // in fcn ng_initdata()) and its scale vector
 int ngDataReceive(ffi.Pointer<VecValuesAll> pvecvaluesall, int structNum, int idNum, int userData)
 {
-  //debugPrint('<NgSPICE> SendDataReceive $pvecvaluesall'); ///<<< Getting 5000+ calls on simulation start
-
   // get allValues struct from unmanaged memory
   VecValuesAll allValues = pvecvaluesall.ref;
   
