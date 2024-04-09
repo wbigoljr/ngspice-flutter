@@ -1,6 +1,8 @@
 // Author: Wilfredo Bigol Jr.
 // Description: This is a Flutter app demonstrating the usage of NGSpice shared library using Dart FFI.
 
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
@@ -12,6 +14,8 @@ String _ngspiceLibVer = '00';
 String _output = '';
 String _ngStatus = 'ready';
 //String _simResults = '';
+
+late SendPort sendPortStat;
 
 class NgSpiceInterface {
   
@@ -110,7 +114,7 @@ class NgSpiceInterface {
   
 }
 
-//Isolate functions
+//Using Isolate Compute
 Future<String> ngCommandAsync(String command) async
 {
    return await compute(_ngCommandCompute, command);
@@ -128,6 +132,20 @@ Future<String> _ngCommandCompute(String command) async
   return output;
 }
 
+//Using Isolate Spawn with SendPort
+void ngCommandPort(Map<String, dynamic> message)
+{
+  String command = message['value'];
+  sendPortStat = message['sendPortStat'];
+  SendPort sendPortOut = message['sendPortOut'];
+
+  NgSpiceInterface ngspiceLo = NgSpiceInterface();
+  ngspiceLo.ngInit();
+  ngspiceLo.ngCommand(command);
+  
+  sendPortOut.send(ngspiceLo.getOutput());
+
+}
 
 //C functions
 typedef NgSpiceInit = ffi.Int32 Function(
@@ -213,11 +231,6 @@ base class VecInfoAll extends ffi.Struct {
   external ffi.Pointer<ffi.Pointer<VecInfo>> vecs; // Pointer to an array of pointers to VecInfo
 }
 
-// base class VecValuePtrStruct extends ffi.Struct        // this structure purely makes parsing easier using C# Marshalling
-// {
-//     @ffi.IntPtr() external int vecValuePtr;
-// }
-
 final getCharPointer = ffi.Pointer.fromFunction<GetChar>(
   getCharReceive,
   1, // Exceptional return value
@@ -262,7 +275,8 @@ int getCharReceive(ffi.Pointer<Utf8> callerOut, int idNum, int userData)
 int getStatReceive(ffi.Pointer<Utf8> simStatus, int idNum, int userData)
 {
     _ngStatus = simStatus.toDartString();
-    debugPrint('<NgSPICE> GetStat: $_ngStatus');
+    //debugPrint('<NgSPICE> GetStat: $_ngStatus');
+    sendPortStat.send(_ngStatus);
     return 0;
 }
 

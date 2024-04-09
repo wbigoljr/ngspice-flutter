@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:menu_bar/menu_bar.dart';
-
+import 'dart:isolate';
 
 // import 'package:flutter_quill/flutter_quill.dart';
 import 'ngspice.dart';
@@ -89,31 +89,45 @@ class _MyHomePageState extends State<MyHomePage> {
   void _runNGSpiceCommand() async {
 
     if(isRunning) return;
+    isRunning = true;
 
     setState(() {
         ngspiceStatusString = 'running command';
     });
 
-    isRunning = true;
-    String outputStr = await ngCommandAsync(_commandStrCtrl.text);
-    ngspiceOutString += '$outputStr\n';
-
-    isRunning = false;
-
-    setState(() {
-      
-      ngspiceStatusString = 'ready';
-
-      _outputStrCtrl.text = ngspiceOutString;
-      _scrollController.animateTo(
-        _scrollController.position.extentTotal,
-        duration: const Duration(seconds: 1),
-        curve: Curves.easeOutSine,
-      );
-
-      _commandTextfocusNode.requestFocus();
-      
+    ReceivePort receivePortStats = ReceivePort();
+    receivePortStats.listen((dynamic data) {
+      setState(() {
+        ngspiceStatusString = data;
+      });
     });
+
+    ReceivePort receivePortOut = ReceivePort();
+    receivePortOut.listen((dynamic data) {
+      setState(() {
+        ngspiceOutString += '$data\n';
+
+        _outputStrCtrl.text = ngspiceOutString;
+        _scrollController.animateTo(
+          _scrollController.position.extentTotal,
+          duration: const Duration(seconds: 1),
+          curve: Curves.easeOutSine,
+        );
+
+        _commandTextfocusNode.requestFocus();
+
+        isRunning = false;
+        ngspiceStatusString = 'ready';
+      });
+
+    });
+
+    await Isolate.spawn(ngCommandPort, {
+      'value': _commandStrCtrl.text,
+      'sendPortStat':receivePortStats.sendPort,
+      'sendPortOut':receivePortOut.sendPort,
+    });
+
   } 
   
   @override
