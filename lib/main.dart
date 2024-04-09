@@ -8,6 +8,7 @@ import 'ngspice.dart';
 
 
 String titleText = 'NGSpice ';
+String initialOutput = '';
 
 NgSpiceInterface ngspice = NgSpiceInterface();
 
@@ -24,6 +25,7 @@ void _initalizeNgspice()
   ngspice.ngInit();
   titleText = 'NGSpice ';
   titleText += ngspice.getVersion();
+  initialOutput = ngspice.initOuput;
 
   //Modify the text in window title bar.
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,25 +75,32 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController _commandStrCtrl = TextEditingController(text: 'source InverterTESTy.cir');
-  final TextEditingController _outputStrCtrl = TextEditingController(text: '');
+  final TextEditingController _outputStrCtrl = TextEditingController(text: initialOutput);
   final FocusNode _commandTextfocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   double monoFontSize = 15;
-  String ngspiceOutString = "NGSpice output";
+  String ngspiceOutString = '';
+  String ngspiceStatusString = "NGSpice status";
   bool isRunning = false;
 
   void _runNGSpiceCommand() async {
 
     if(isRunning) return;
 
+    setState(() {
+        ngspiceStatusString = 'running command';
+    });
+
     isRunning = true;
     String outputStr = await ngCommandAsync(_commandStrCtrl.text);
-   
     ngspiceOutString += '$outputStr\n';
 
     isRunning = false;
 
     setState(() {
+      
+      ngspiceStatusString = 'ready';
+
       _outputStrCtrl.text = ngspiceOutString;
       _scrollController.animateTo(
         _scrollController.position.extentTotal,
@@ -100,17 +109,10 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
       _commandTextfocusNode.requestFocus();
+      
     });
   } 
   
-  void _updateNGSpiceStatus()
-  {
-
-    setState(() {
-
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
 
@@ -211,6 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   autofocus: false,
                   readOnly: true,
                   keyboardType: TextInputType.multiline,
+                  textAlignVertical: TextAlignVertical.top,
                   style: TextStyle(fontFamily: 'RobotoMono', fontSize: monoFontSize),
                   maxLines: null,
                   minLines: null,
@@ -225,8 +228,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               
-              const SizedBox(height: 17),
-
+              const SizedBox(height: 8),
+              
+              Text(
+                ngspiceStatusString,
+                style: TextStyle(fontFamily: 'RobotoMono', fontSize: monoFontSize),
+              ),
+              
+              const SizedBox(height: 8),
+              
               TextField (
                 controller: _commandStrCtrl,
                 focusNode: _commandTextfocusNode,

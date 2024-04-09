@@ -7,13 +7,14 @@ import 'package:compute/compute.dart';
 
 String _ngspiceLibVer = '00';
 String _output = '';
-String _status = 'ready';
+String _ngStatus = 'ready';
 String _simResults = '';
 
 class NgSpiceInterface {
   
   bool _isInitialized = false;
-  
+  String initOuput = '';
+
   late ffi.DynamicLibrary ngspice;
   
   //Dart Functions of NGSpice
@@ -70,9 +71,10 @@ class NgSpiceInterface {
 
     if(init == 0){_isInitialized = true;}
     
-    setOutputFormat('ascii');
+    //setOutputFormat('ascii');
+    initOuput = _output;
 
-    _output = ''; //Reset
+    _output = ''; //Clear output string
   }
 
   void ngCommand(String command)
@@ -81,7 +83,6 @@ class NgSpiceInterface {
       _output += '\nERROR: NGSpice not loaded\n';
       return;
     }
-
     _output += '\n> $command\n';
     ngspiceCommand(command.toNativeUtf8());
 
@@ -95,13 +96,18 @@ class NgSpiceInterface {
 
   Future<bool> ngIsReady() async
   {
-    await Future.doWhile(() => (!_status.contains('ready')));
+    await Future.doWhile(() => (!_ngStatus.contains('ready')));
     return true;
   }
 
+  String getStatus()
+  {
+    return _ngStatus;
+  }
+  
 }
 
-//Threaded functions
+//Isolate functions
 Future<String> ngCommandAsync(String command) async
 {
    return await compute(_ngCommandCompute, command);
@@ -115,13 +121,6 @@ Future<String> _ngCommandCompute(String command) async
 
   await ngspiceLo.ngIsReady();
   String output = ngspiceLo.getOutput();
-
-  //Cleanup
-  // if(command.contains('source '))
-  // {
-  //   ngspiceLo.ngCommand('destroy all');
-  //   ngspiceLo.ngCommand('reset');
-  // }
 
   return output;
 }
@@ -259,8 +258,8 @@ int getCharReceive(ffi.Pointer<Utf8> callerOut, int idNum, int userData)
 //Receives progress information (actual task and percent done)
 int getStatReceive(ffi.Pointer<Utf8> simStatus, int idNum, int userData)
 {
-    _status = simStatus.toDartString();
-    debugPrint('<NgSPICE> GetStat: $_status');
+    _ngStatus = simStatus.toDartString();
+    debugPrint('<NgSPICE> GetStat: $_ngStatus');
     return 0;
 }
 
