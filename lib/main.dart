@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:menu_bar/menu_bar.dart';
 import 'dart:isolate';
+import 'package:provider/provider.dart';
 
 // import 'package:flutter_quill/flutter_quill.dart';
 import 'ngspice.dart';
-
+import 'userprefs.dart';
 
 String titleText = 'NGSpice ';
 String initialOutput = '';
+ 
+ String themeButtonName = 'Dark'; //Default is light
 
 NgSpiceInterface ngspice = NgSpiceInterface();
 
@@ -19,8 +22,17 @@ void main() async {
 
   _initalizeNgspice();
 
-  runApp(const MyApp());
-
+  ThemePreferences themePrefs = ThemePreferences();
+  final bool isDark = await themePrefs.getTheme();
+  if(isDark) {themeButtonName = 'Light';}
+  
+  //runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(isDark ? darkTheme : lightTheme),
+      child: const MyApp(),
+    ),
+  );
 }
 
 void _initalizeNgspice()
@@ -43,26 +55,28 @@ void _initalizeNgspice()
 
 }
 
+ThemeData lightTheme = ThemeData(
+  colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey),
+  useMaterial3: true,
+);
+
+ThemeData darkTheme = ThemeData(
+  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey, brightness: Brightness.dark, background: Colors.blueGrey),
+  useMaterial3: true,
+);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return 
+      MaterialApp(
       title: 'Flutter NGSpice',
-      themeMode: ThemeMode.dark,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey, brightness: Brightness.dark, background: Colors.blueGrey),
-        useMaterial3: true,
-      ),
-         
+      theme: Provider.of<ThemeNotifier>(context).themeData,
       home: MyHomePage(title: titleText),
-    );
+      );
   }
 }
 
@@ -81,9 +95,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _outputStrCtrl = TextEditingController(text: initialOutput);
   final FocusNode _commandTextfocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-  double monoFontSize = 15;
+  double monoFontSize = 13;
+ 
+
   String ngspiceOutString = '';
-  String ngspiceStatusString = "NGSpice status";
+  String ngspiceStatusString = ">>> status <<<";
   bool isRunning = false;
 
   void _runNGSpiceCommand() async {
@@ -130,6 +146,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
   } 
   
+  void _switchTheme()
+  {
+
+    bool isDark = false;
+    if(themeButtonName == 'Dark') {isDark = true;}
+
+    Provider.of<ThemeNotifier>(context, listen: false)
+        .setTheme(
+      Provider.of<ThemeNotifier>(context, listen: false).themeData ==
+              lightTheme
+          ? darkTheme
+          : lightTheme, isDark
+    );
+
+    Provider.of<ThemeNotifier>(context, listen: false).themeData ==
+            lightTheme
+        ? themeButtonName = 'Dark'
+        : themeButtonName = 'Light';
+    
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -151,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 MenuButton(
                 text: const Text('Reload Library', style: TextStyle(fontSize: gFontSize)),
                 onTap: () {
-                  _initalizeNgspice();
+                    _initalizeNgspice();
                     setState(() {
                       _outputStrCtrl.text = initialOutput;
                     });
@@ -193,11 +230,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 //icon: const Icon(Icons.exit_to_app, size: 19,),
                 //shortcutText: 'Ctrl+Q',
               ),
-                MenuButton(
-                text: const Text('Dark Theme', style: TextStyle(fontSize: gFontSize)),
-                onTap: () {},
+              const MenuDivider(),
+              MenuButton(
+                text: const Text('Set Theme', style: TextStyle(fontSize: gFontSize)),
+                onTap: () {
+                  _switchTheme();
+                },
                 //icon: const Icon(Icons.exit_to_app, size: 19,),
-                //shortcutText: 'Ctrl+Q',
+                shortcutText: themeButtonName,
+                shortcutStyle: const TextStyle(fontWeight: FontWeight.normal, color: Colors.grey)
               ),
             ],
           ),
@@ -240,12 +281,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   maxLines: null,
                   minLines: null,
                   expands: true,
-                  //textAlignVertical: TextAlignVertical.bottom,
                   autocorrect: false,
                   //onChanged: (s) => {},
                   decoration: const InputDecoration(
-                    labelText: 'Output', // Placeholder text
-                    border: OutlineInputBorder(), // Border outline
+                    labelText: 'Output',
+                    border: OutlineInputBorder(),
                   ),
                 ),
               ),
@@ -271,7 +311,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   border: OutlineInputBorder(), // Border outline
                 ),
               ),
-
+              
+              const SizedBox(height: 1),
             ]
 
           ),

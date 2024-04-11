@@ -266,7 +266,7 @@ int getCharReceive(ffi.Pointer<Utf8> callerOut, int idNum, int userData)
     String callerOutString = callerOut.toDartString();
     _saveNgSpiceVersion(callerOutString);
     _saveConsoleOutput(callerOutString);
-    debugPrint('<NgSPICE> GetChar: $callerOutString');
+    //debugPrint('<NgSPICE> GetChar: $callerOutString');
     return 0;
 }
 
