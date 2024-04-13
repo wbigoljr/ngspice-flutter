@@ -6,10 +6,13 @@ import 'package:window_manager/window_manager.dart';
 import 'package:menu_bar/menu_bar.dart';
 import 'dart:isolate';
 import 'package:provider/provider.dart';
+// import 'package:desktop_multi_window/desktop_multi_window.dart';
+// import 'dart:convert';
 
 // import 'package:flutter_quill/flutter_quill.dart';
 import 'ngspice.dart';
 import 'userprefs.dart';
+import 'vplotter.dart';
 
 String titleText = 'NGSpice ';
 String initialOutput = '';
@@ -167,6 +170,11 @@ class _MyHomePageState extends State<MyHomePage> {
     
   }
 
+  void _openVPlotter()
+  {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VPlotter(data: 'TestData')),);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -211,8 +219,8 @@ class _MyHomePageState extends State<MyHomePage> {
           submenu: SubMenu(
             menuItems: [
               MenuButton(
-                text: const Text('Show Console', style: TextStyle(fontSize: gFontSize)),
-                onTap: () {},
+                text: const Text('Show Graph', style: TextStyle(fontSize: gFontSize)),
+                onTap: () {_openVPlotter();},
                 //icon: const Icon(Icons.save, size: 19,),
                 //shortcutText: 'Ctrl+S',
               ),

@@ -14,6 +14,7 @@ String _ngspiceLibVer = '00';
 String _output = '';
 String _ngStatus = 'ready';
 //String _simResults = '';
+List<VecValuesAllDart> vecAllArray = [];
 
 late SendPort sendPortStat;
 
@@ -81,6 +82,8 @@ class NgSpiceInterface {
     
     //setOutputFormat('ascii');
     initOuput = _output;
+
+    vecAllArray.clear();
 
     _output = ''; //Clear output string
   }
@@ -232,6 +235,24 @@ base class VecInfoAll extends ffi.Struct {
   external ffi.Pointer<ffi.Pointer<VecInfo>> vecs; // Pointer to an array of pointers to VecInfo
 }
 
+//Dart Managed Class
+class VecValueDart
+{
+  String vecName = '';
+  double cReal = 0;
+  double cImag = 0;
+  bool isScale = false;
+  bool isComplex = false;
+}
+
+class VecValuesAllDart
+{
+  int vecCount = 0;
+  int vecIndex = 0;
+  List<VecValueDart> vecArray = [];
+}
+
+
 final getCharPointer = ffi.Pointer.fromFunction<GetChar>(
   getCharReceive,
   1, // Exceptional return value
@@ -290,31 +311,27 @@ int controlledExitReceive(int exitStatus, bool unloadStatus, bool exitType, int 
     return exitStatus;
 }
 
-// get data from all vectors at a every accepted point during simulation
+// get data from all vectors at every accepted point during simulation
 // Here we specially look for vector with number vecgetnumber (found
 // in fcn ng_initdata()) and its scale vector
 int ngDataReceive(ffi.Pointer<VecValuesAll> pvecvaluesall, int structNum, int idNum, int userData)
 {
-  // get allValues struct from unmanaged memory
-  VecValuesAll allValues = pvecvaluesall.ref;
-  
-  final vecValuesPointer = calloc<VecValue>(allValues.vecCount);
+  // get allValues struct from unmanaged memory to Dart managed.
+  VecValuesAllDart allVecValuesDart = VecValuesAllDart();
+  allVecValuesDart.vecCount = pvecvaluesall.ref.vecCount;
+  allVecValuesDart.vecIndex = pvecvaluesall.ref.vecIndex;
 
-  String name = '';
-  for (int i = 0; i < allValues.vecCount; i++)
-  {
-  
-    vecValuesPointer[i] = allValues.vecArray[i].ref;
+  allVecValuesDart.vecArray = List<VecValueDart>.generate(allVecValuesDart.vecCount, (index) {
+    return VecValueDart()
+      ..vecName = pvecvaluesall.ref.vecArray[index].ref.vecName.toDartString()
+      ..cReal = pvecvaluesall.ref.vecArray[index].ref.cReal
+      ..cImag = pvecvaluesall.ref.vecArray[index].ref.cImag
+      ..isScale = pvecvaluesall.ref.vecArray[index].ref.isScale
+      ..isComplex = pvecvaluesall.ref.vecArray[index].ref.isComplex;
+  });
 
-    name += ' ';
-    name += allValues.vecArray[i].ref.vecName.toDartString();
-    
-    //debugPrint('<NgSPICE> VecName: $name');
-  }
+  vecAllArray.add(allVecValuesDart);
 
-  //Test, show to output
-  //_output += '$name\n'; 
-  
   return 0;
 }
 // Get info on all vectors after they have been set up. Called once
