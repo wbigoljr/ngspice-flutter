@@ -17,6 +17,7 @@ String _ngStatus = 'ready';
 List<VecValuesAllDart> vecAllArray = [];
 
 late SendPort sendPortStat;
+late SendPort sendPortVectors;
 
 class NgSpiceInterface {
   
@@ -27,11 +28,6 @@ class NgSpiceInterface {
   
   //Dart Functions of NGSpice
   late NgSpiceCommandD ngspiceCommand;
-
-  String getOutput()
-  {
-     return _output;
-  }
 
   String getVersion()
   {
@@ -110,12 +106,22 @@ class NgSpiceInterface {
     await Future.doWhile(() => (!_ngStatus.contains('ready')));
     return true;
   }
+  
+  String getOutput()
+  {
+     return _output;
+  }
 
   String getStatus()
   {
     return _ngStatus;
   }
   
+  List<VecValuesAllDart> getVectors()
+  {
+    return vecAllArray;
+  }
+
 }
 
 //Using Isolate Compute
@@ -142,13 +148,14 @@ void ngCommandPort(Map<String, dynamic> message)
   String command = message['value'];
   sendPortStat = message['sendPortStat'];
   SendPort sendPortOut = message['sendPortOut'];
+  sendPortVectors = message['sendPortVectors'];
 
   NgSpiceInterface ngspiceLo = NgSpiceInterface();
   ngspiceLo.ngInit();
   ngspiceLo.ngCommand(command);
   
   sendPortOut.send(ngspiceLo.getOutput());
-
+  sendPortVectors.send(ngspiceLo.getVectors());
 }
 
 //C functions

@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 //import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'ngspice.dart';
 
 class VPlotter extends StatelessWidget {
-  final String data;
-  const VPlotter({super.key, required this.data});
+  final List<VecValuesAllDart> vecData;
+  const VPlotter({super.key, required this.vecData});
+
+
+  void _plotVectors()
+  {
+    for(VecValuesAllDart vec in vecData) {
+      String name = vec.vecArray[0].vecName;
+      double value = vec.vecArray[0].cReal;
+      //debugPrint('Vec: $name Value: $value');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +25,17 @@ class VPlotter extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Work in progress...'),
-            ElevatedButton(
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.of(context).pop();
+            //   },
+            //   child: const Text('Close'),
+            // ),
+              ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                _plotVectors();
               },
-              child: const Text('Close'),
+              child: const Text('Plot'),
             ),
           ],
         ),

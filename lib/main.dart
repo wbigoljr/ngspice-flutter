@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 // import 'dart:convert';
 
 // import 'package:flutter_quill/flutter_quill.dart';
-import 'ngspice.dart';
+import 'ngspice.dart' as ngspice;
 import 'userprefs.dart';
 import 'vplotter.dart';
 
@@ -19,7 +19,7 @@ String initialOutput = '';
  
  String themeButtonName = 'Dark'; //Default is light
 
-NgSpiceInterface ngspice = NgSpiceInterface();
+ngspice.NgSpiceInterface ngspiceInit = ngspice.NgSpiceInterface();
 
 void main() async {
 
@@ -40,10 +40,10 @@ void main() async {
 
 void _initalizeNgspice()
 {
-  ngspice.ngInit();
-  titleText = 'NGSpice ';
-  titleText += ngspice.getVersion();
-  initialOutput = ngspice.initOuput;
+  ngspiceInit.ngInit();
+  titleText = 'ngspiceInit ';
+  titleText += ngspiceInit.getVersion();
+  initialOutput = ngspiceInit.initOuput;
 
   //Modify the text in window title bar.
   WidgetsFlutterBinding.ensureInitialized();
@@ -141,10 +141,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
     });
 
-    await Isolate.spawn(ngCommandPort, {
+    ReceivePort receivePortVectors = ReceivePort();
+    receivePortVectors.listen((dynamic data) {
+      setState(() {
+        ngspice.vecAllArray = data;
+      });
+    });
+
+    ngspice.vecAllArray.clear(); //Clear current vectors
+
+    await Isolate.spawn(ngspice.ngCommandPort, {
       'value': _commandStrCtrl.text,
       'sendPortStat':receivePortStats.sendPort,
       'sendPortOut':receivePortOut.sendPort,
+      'sendPortVectors':receivePortVectors.sendPort,
     });
 
   } 
@@ -172,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openVPlotter()
   {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VPlotter(data: 'TestData')),);
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => VPlotter(vecData: ngspice.vecAllArray)),);
   }
 
   @override
